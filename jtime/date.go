@@ -25,7 +25,7 @@ func Age0(tBirth, tNow time.Time) int {
 	return age
 }
 
-// DateFillAB 补全两个日期节点
+// DateFillAB 补全两个日期。主要是用于 SQL 查询时，如果日期边界不完整，可以自动补全默认范围。
 //
 //	a,b 起始日期、结束日期
 //	daySize 如果 a、b 一个有效一个为空日期，则以 daySize 计算另外一个日期，
@@ -50,9 +50,13 @@ func DateFillAB(a, b time.Time, daySize, day0 int) (time.Time, time.Time) {
 	}
 }
 
-// DateFillMonth 扩展到月内时间
-//  1. 如果 a、b 都是空日期，则以「今天」作为开始日期
-//  2. 如果 a、b 一个有效一个为空日期，则以另外一个日期的年月作为开始日期
+// DateFillMonth 扩展到月内时间。主要是用于 SQL 查询时，如果日期边界不完整，可以自动补全默认范围。
+//
+//	 a,b 起始日期、结束日期
+//	 minDay 最小天数，如果需要补全时，最少补全的天数
+//
+//	1. 如果 a、b 都是空日期，则以「今天」作为开始日期
+//	2. 如果 a、b 一个有效一个为空日期，则以另外一个日期的年月作为开始日期
 func DateFillMonth(a, b time.Time, minDay int) (time.Time, time.Time) {
 	zeroA, zeroB := a.IsZero(), b.IsZero()
 	if !zeroA && !zeroB {
@@ -60,18 +64,23 @@ func DateFillMonth(a, b time.Time, minDay int) (time.Time, time.Time) {
 	}
 	var y int
 	var m time.Month
+	var l *time.Location
 	if !zeroA {
 		y, m, _ = a.Date()
+		l = a.Location()
 	} else if !zeroB {
 		y, m, _ = b.Date()
+		l = b.Location()
 	} else {
-		y, m, _ = time.Now().Date()
+		t := time.Now()
+		y, m, _ = t.Date()
+		l = t.Location()
 	}
 	if zeroA {
-		a = time.Date(y, m, 1, 0, 0, 0, 0, b.Location())
+		a = time.Date(y, m, 1, 0, 0, 0, 0, l)
 	}
 	if zeroB {
-		b = time.Date(y, m+1, 1, 0, 0, 0, 0, b.Location())
+		b = time.Date(y, m+1, 1, 0, 0, 0, 0, l)
 	}
 	if b.Sub(a) < time.Duration(minDay)*time.Hour*24 {
 		if !zeroB {
