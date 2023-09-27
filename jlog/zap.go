@@ -216,3 +216,9 @@ func (z _zap) New(c LogConfig) *zap.Logger {
 	}
 	return logger
 }
+
+type Logger zap.Logger
+
+func (L *Logger) ForTask(name string) *Logger {
+	return (*Logger)((*zap.Logger)(L).With(zap.String("task", name)))
+}
