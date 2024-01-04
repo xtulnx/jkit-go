@@ -1,8 +1,10 @@
 package jgin
 
 import (
+	"github.com/xtulnx/jkit-go/jtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -51,17 +53,6 @@ func (P *PageResp) SetPageSize(num, size int, cnt int64) (offset int) {
 // JIDs 用逗号分隔的整数列表
 type JIDs string
 
-func (id JIDs) GetInt() []int {
-	ss1 := strings.Split(string(id), ",")
-	id2 := make([]int, 0, len(ss1))
-	for _, s := range ss1 {
-		if n, ok := strconv.ParseInt(s, 10, 32); ok == nil {
-			id2 = append(id2, int(n))
-		}
-	}
-	return id2
-}
-
 func (id *JIDs) FromInt(ids []int) {
 	elems := make([]string, len(ids))
 	for i, v := range ids {
@@ -70,10 +61,18 @@ func (id *JIDs) FromInt(ids []int) {
 	id.FromTag(elems)
 }
 
+func (id *JIDs) FromInt64(ids []int64) {
+	elems := make([]string, len(ids))
+	for i, v := range ids {
+		elems[i] = strconv.FormatInt(v, 10)
+	}
+	id.FromTag(elems)
+}
+
 func (id *JIDs) FromID(ids []uint) {
 	elems := make([]string, len(ids))
 	for i, v := range ids {
-		elems[i] = strconv.Itoa(int(v))
+		elems[i] = strconv.FormatUint(uint64(v), 10)
 	}
 	id.FromTag(elems)
 }
@@ -83,6 +82,20 @@ func (id *JIDs) FromTag(elems []string) {
 		return
 	}
 	*id = JIDs(strings.Join(elems, ","))
+}
+
+func (id JIDs) GetInt() []int {
+	if id == "" {
+		return nil
+	}
+	ss1 := strings.Split(string(id), ",")
+	id2 := make([]int, 0, len(ss1))
+	for _, s := range ss1 {
+		if n, ok := strconv.ParseInt(s, 10, 32); ok == nil {
+			id2 = append(id2, int(n))
+		}
+	}
+	return id2
 }
 
 func (id JIDs) GetID() []uint {
@@ -157,6 +170,21 @@ func (id JIDs) GetTagUnique() []string {
 }
 
 //////////////////////////////////////////////////////////////////
+
+type JDates string
+
+func (J JDates) Date() time.Time {
+	t1, _ := jtime.StringToDate(string(J))
+	return t1
+}
+
+func (J JDates) DateLocal() time.Time {
+	t1, _ := jtime.StringToDate(string(J))
+	if t1.IsZero() {
+		return t1.In(time.Local)
+	}
+	return t1
+}
 
 //////////////////////////////////////////////////////////////////
 
