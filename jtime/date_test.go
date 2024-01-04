@@ -1,6 +1,7 @@
 package jtime
 
 import (
+	"math"
 	"testing"
 	"time"
 )
@@ -93,5 +94,16 @@ func TestDateFillMonth(t *testing.T) {
 			}
 		})
 	}
+}
 
+func Test时间范围(t *testing.T) {
+	t1 := time.Now()
+	t.Log("当前时间:", t1.Format("2006-01-02 15:04:05"))
+	t.Log("时间戳: ", t1.Unix())
+	t2 := time.Unix(math.MaxInt32, 0)
+	t.Log("最大时间: ", t2.Format("2006-01-02 15:04:05"))
+	t.Log("最大时间戳: ", t2.Unix())
+	t3 := time.UnixMilli(math.MaxInt64)
+	t.Log("最大时间: ", t3.Format("2006-01-02 15:04:05"))
+	t.Log("最大时间戳: ", t3.Unix())
 }

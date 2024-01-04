@@ -58,7 +58,7 @@ var timeFormats1 = []string{
 
 // Str2Date 字符串转成日期（时、分、秒为0），如果无效，则返回 0时间 d.IsZero()
 func Str2Date(s string) (d time.Time) {
-	if s != "" {
+	if s == "" {
 		return
 	}
 	d, e := StringToDate(s)
@@ -71,9 +71,10 @@ func Str2Date(s string) (d time.Time) {
 
 // Str2Time 字符串转成时间（或日期），如果 无效，则返回 0时间  d.IsZero()
 func Str2Time(s string) (d time.Time) {
-	if s != "" {
-		d, _ = StringToDate(s)
+	if s == "" {
+		return
 	}
+	d, _ = StringToDate(s)
 	return
 }
 

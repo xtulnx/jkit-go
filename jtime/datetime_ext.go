@@ -40,6 +40,9 @@ var timeFormatsForExpandSection = [][]string{
 
 // Str2TimeExpand 扩展包含当前的时段；如参数是按天，则扩展到明天；如果参数精确到小时，则扩展到下一小时
 func Str2TimeExpand(s string) (d time.Time) {
+	if s == "" {
+		return
+	}
 	for i := range timeFormatsForExpandSection {
 		for _, dateType := range timeFormatsForExpandSection[i] {
 			if t1, e1 := time.ParseInLocation(dateType, s, time.Local); e1 == nil {
