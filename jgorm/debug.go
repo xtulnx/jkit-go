@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm/utils"
 	"path"
 	"strings"
+	_ "unsafe"
 )
 
 //go:linkname gormSourceDir gorm.io/gorm/utils.gormSourceDir

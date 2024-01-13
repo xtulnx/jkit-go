@@ -72,3 +72,26 @@ func ColsNamesByExpr(expr ...field.Expr) []string {
 	}
 	return names
 }
+
+// 使用别名构建子查询
+func DaoToSub(dao gen.Dao, alias string) gen.Dao {
+	db1 := dao.(*gen.DO).UnderlyingDB()
+	db0 := db1.Session(&gorm.Session{Initialized: true, NewDB: true})
+	db1 = db0.Table("(?) "+alias, db1)
+	d2 := &gen.DO{}
+	d2.UseDB(db1)
+	return d2
+}
+
+// 获取一个空的 db，用于构建子查询
+func DaoDbBlank(dao gen.Dao) *gorm.DB {
+	return dao.(*gen.DO).UnderlyingDB().Session(&gorm.Session{Initialized: true, NewDB: true})
+}
+
+// 获取 dao 的 sql
+func DaoShowSQL(dao gen.Dao) string {
+	return dao.(*gen.DO).UnderlyingDB().ToSQL(func(tx *gorm.DB) *gorm.DB {
+		var tm interface{}
+		return tx.Scan(&tm)
+	})
+}
