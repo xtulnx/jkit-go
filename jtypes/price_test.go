@@ -62,12 +62,23 @@ func TestPrice2(t *testing.T) {
 			return fmt.Sprintf("%s.Equal(%s) => %v", v.String(), a.String(), e)
 		}
 	}
+	fnMaybe := func(v JPrice, e error) JPrice {
+		return v
+	}
+	fnMust := func(v JPrice, e error) JPrice {
+		if e != nil {
+			return JPrice(math.NaN())
+		}
+		return v
+	}
 	for _, v := range []struct {
 		N    string
 		P    JPrice
 		F    func(v JPrice) string
 		Want string
 	}{
+		{"empty", fnMaybe(NewPriceFromString("abc")), fnStr, "float=0, str=0, cent=0, fixed=0, round=0"},
+		{"must nan", fnMust(NewPriceFromString("abc")), fnStr, "float=NaN, str=NaN, cent=-9223372036854775808, fixed=-9223372036854775808, round=NaN"},
 		{"1/3", 1.0 / 3, fnStr, "float=0.3333333333333333, str=0.33, cent=33, fixed=3333, round=0.3333"},
 		{"2/3", 2.0 / 3, fnStr, "float=0.6666666666666666, str=0.67, cent=67, fixed=6667, round=0.6667"},
 		{"2024/31", 2024.0 / 31, fnStr, "float=65.29032258064517, str=65.29, cent=6529, fixed=652903, round=65.2903"},
@@ -75,6 +86,7 @@ func TestPrice2(t *testing.T) {
 		{"-2/3", -2.0 / 3, fnStr, "float=-0.6666666666666666, str=-0.67, cent=-67, fixed=-6667, round=-0.6667"},
 		{"2/3-0.002", 2.0/3 - 0.002, fnStr, "float=0.6646666666666666, str=0.66, cent=66, fixed=6647, round=0.6647"},
 		{"2/3-0.0002", 2.0/3 - 0.0002, fnStr, "float=0.6664666666666667, str=0.67, cent=67, fixed=6665, round=0.6665"},
+		{"empty", fnS(""), fnStr, "float=0, str=0, cent=0, fixed=0, round=0"},
 		{"Nan", fnS("Nan"), fnStr, "float=NaN, str=NaN, cent=-9223372036854775808, fixed=-9223372036854775808, round=NaN"},
 		{"678,901 234,567.890123456", fnS("678,901 234,567.890123456"), fnStr, "float=6.789012345678901e+11, str=678901234567.89, cent=67890123456789, fixed=6789012345678901, round=6.789012345678901e+11"},
 		{"2/3 - 0.002 notEqual", 2.0 / 3, fnEq(-0.02, false), "0.67.Equal(0.65) => false"},

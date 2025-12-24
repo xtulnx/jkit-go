@@ -6,6 +6,18 @@ import (
 	"strconv"
 )
 
+const (
+	JPriceCentPrecision  = 100
+	JPriceFixedPrecision = 10000
+	JPriceSize           = 2
+	JPriceZero           = JPrice(0)
+	JPriceOne            = JPrice(1)
+	JPriceOneCent        = JPrice(float64(1) / JPriceCentPrecision)
+	JPriceOneFixed       = JPrice(float64(1) / JPriceFixedPrecision)
+	JPriceThousand       = JPrice(1000)
+	JPriceHalf           = JPrice(0.5)
+)
+
 // 价格，或财务金额，精度4位小数
 type JPrice float64
 
@@ -13,24 +25,39 @@ func NewPrice(p float64) JPrice {
 	return JPrice(p)
 }
 
+// NewPriceFromCent 从“分”整数转换成价格
 func NewPriceFromCent(cent int64) JPrice {
-	return JPrice(float64(cent) / 100)
+	return JPrice(float64(cent) / JPriceCentPrecision)
 }
 
+// ToCent 转换成“分”整数（放大100）
 func (p JPrice) ToCent() int64 {
-	return int64(math.Round(float64(p) * 100))
+	return int64(math.Round(float64(p) * JPriceCentPrecision))
 }
 
+// NewPriceFromFixed 从定点值转换成价格
 func NewPriceFromFixed(fix int64) JPrice {
-	return JPrice(float64(fix) / 1e4)
+	return JPrice(float64(fix) / JPriceFixedPrecision)
 }
 
+// ToFixed 转换成成“定点”整数（放大10000）
 func (p JPrice) ToFixed() int64 {
-	return int64(math.Round(float64(p) * 1e4))
+	return int64(math.Round(float64(p) * JPriceFixedPrecision))
 }
 
+// Round 四舍五入，精度到4位小数
 func (p JPrice) Round() JPrice {
-	return JPrice(math.Round(float64(p)*1e4) / 1e4)
+	return JPrice(math.Round(float64(p)*JPriceFixedPrecision) / JPriceFixedPrecision)
+}
+
+// Abs 绝对值
+func (p JPrice) Abs() JPrice {
+	return JPrice(math.Abs(float64(p)))
+}
+
+// ToPtr 创建一个指针值
+func (p JPrice) ToPtr() *JPrice {
+	return &p
 }
 
 func NewPriceFromString(s string) (JPrice, error) {
@@ -42,8 +69,6 @@ func NewPriceFromString(s string) (JPrice, error) {
 func (p JPrice) Float() float64 {
 	return float64(p)
 }
-
-const JPriceSize = 2
 
 func (p JPrice) String() string {
 	b1 := strconv.AppendFloat(nil, float64(p), 'f', JPriceSize, 64)

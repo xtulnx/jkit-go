@@ -17,6 +17,19 @@ type JDateTime struct {
 	Valid bool
 }
 
+func NewDateTimeFromString(s string) (JDateTime, error) {
+	var t JDateTime
+	err := t.UnmarshalText([]byte(s))
+	return t, err
+}
+
+func NewDateTime(d time.Time) JDateTime {
+	return JDateTime{
+		Time:  d,
+		Valid: !d.IsZero(),
+	}
+}
+
 func (ct JDateTime) String() string {
 	if ct.IsValid() {
 		return ct.Time.Format(ctLayout)
@@ -62,6 +75,16 @@ func (ct JDateTime) MarshalJSON() ([]byte, error) {
 }
 
 func (n *JDateTime) Scan(value any) error {
+	switch v := value.(type) {
+	case []byte:
+		if e1 := n.UnmarshalText(v); e1 == nil {
+			return nil
+		}
+	case string:
+		if e1 := n.UnmarshalText([]byte(v)); e1 == nil {
+			return nil
+		}
+	}
 	var a sql.NullTime
 	err := a.Scan(value)
 	if err == nil {

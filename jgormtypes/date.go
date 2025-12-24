@@ -71,6 +71,16 @@ func (ct JDate) MarshalJSON() ([]byte, error) {
 }
 
 func (n *JDate) Scan(value any) error {
+	switch v := value.(type) {
+	case []byte:
+		if e1 := n.UnmarshalText(v); e1 == nil {
+			return nil
+		}
+	case string:
+		if e1 := n.UnmarshalText([]byte(v)); e1 == nil {
+			return nil
+		}
+	}
 	var a sql.NullTime
 	err := a.Scan(value)
 	if err == nil {

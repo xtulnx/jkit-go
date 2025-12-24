@@ -2,21 +2,22 @@ package jgormtypes
 
 import (
 	"database/sql/driver"
-	"github.com/xtulnx/jkit-go/jtime"
 	"strings"
 	"time"
+
+	"github.com/xtulnx/jkit-go/jtime"
 )
 
 type JTypeBase interface {
-	String() string
-	IsValid() bool
-	IsZero() bool
-	UnmarshalText(data []byte) error
-	MarshalText() ([]byte, error)
-	UnmarshalJSON(data []byte) (err error)
-	MarshalJSON() ([]byte, error)
-	Scan(value any) error
-	Value() (driver.Value, error)
+	String() string                        // 转换为字符串
+	IsValid() bool                         // 是否有效值
+	IsZero() bool                          // 是否零值（即无效）
+	UnmarshalText(data []byte) error       // 从文本解析
+	MarshalText() ([]byte, error)          // 转换为文本
+	UnmarshalJSON(data []byte) (err error) // 从JSON解析
+	MarshalJSON() ([]byte, error)          // 转换为JSON
+	Scan(value any) error                  // 从数据库查询解析
+	Value() (driver.Value, error)          // 转换为数据库存储
 }
 
 func parseDateTimeInner(data []byte) (time.Time, error) {
