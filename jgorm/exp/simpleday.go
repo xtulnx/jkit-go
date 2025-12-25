@@ -1,18 +1,21 @@
-package jgorm
+package exp
 
 import (
 	"bytes"
 	"database/sql"
 	"database/sql/driver"
+	"time"
+
+	"github.com/xtulnx/jkit-go/jgorm"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 ////////////////////////////////////////////////////////////////
 
+// SimpleDayType 自定义日期类型，在创建记录时「缺省」以当前日期初始化值。
 type SimpleDayType datatypes.Date
 
 func kitDate2Str(t1 time.Time) string {
@@ -151,7 +154,7 @@ func (b SimpleDayCreateClause) MergeClause(c *clause.Clause) {
 
 func (b SimpleDayCreateClause) ModifyStatement(stmt *gorm.Statement) {
 	var curTime time.Time
-	StmtReplaceColumnValue(stmt, b.Field, func(r1 interface{}, zero bool) (r2 interface{}, replace bool) {
+	jgorm.StmtReplaceColumnValue(stmt, b.Field, func(r1 interface{}, zero bool) (r2 interface{}, replace bool) {
 		if t1, ok := r1.(SimpleDayType); ok && t1.IsValid() {
 			return
 		}

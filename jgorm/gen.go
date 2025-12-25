@@ -1,11 +1,12 @@
 package jgorm
 
 import (
+	"strings"
+
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"strings"
 )
 
 // 补充 gorm/gen 辅助
@@ -73,20 +74,12 @@ func ColsNamesByExpr(expr ...field.Expr) []string {
 	return names
 }
 
-// 获取一个空的 db，用于构建子查询
+// DaoDbBlank 获取一个空的 db，用于构建子查询
 func DaoDbBlank(dao gen.Dao) *gorm.DB {
 	return dao.(*gen.DO).UnderlyingDB().Session(&gorm.Session{Initialized: true, NewDB: true})
 }
 
-// 获取 dao 的 sql
-func DaoShowSQL(dao gen.Dao) string {
-	return dao.(*gen.DO).UnderlyingDB().ToSQL(func(tx *gorm.DB) *gorm.DB {
-		var tm interface{}
-		return tx.Scan(&tm)
-	})
-}
-
-// 使用别名构建子查询
+// GenSubTable 使用别名构建子查询
 func GenSubTable(dao gen.Dao, alias string) gen.Dao {
 	db1 := dao.(*gen.DO).UnderlyingDB()
 	db0 := db1.Session(&gorm.Session{Initialized: true, NewDB: true})
@@ -94,6 +87,17 @@ func GenSubTable(dao gen.Dao, alias string) gen.Dao {
 	d2 := &gen.DO{}
 	d2.UseDB(db1)
 	return d2
+}
+
+// GenSubTable4Related 被联表查询
+func GenSubTable4Related(dao gen.Dao, alias string) gen.Dao {
+	db1 := dao.(*gen.DO).UnderlyingDB()
+	db0 := db1.Session(&gorm.Session{Initialized: true, NewDB: true})
+	dbR := db0.Table("?", db1)
+	dbR.Statement.WriteQuoted(clause.Table{Name: clause.CurrentTable})
+	daoR := &gen.DO{}
+	daoR.UseDB(dbR)
+	return daoR.As(alias)
 }
 
 func BlankDB(dao gen.Dao) *gorm.DB {
@@ -162,4 +166,12 @@ func DB2Dao(db1 *gorm.DB, alias string) gen.Dao {
 	d := gen.DO{}
 	d.UseDB(db1)
 	return d.As(alias)
+}
+
+// DaoShowSQL 获取 dao 的 sql
+func DaoShowSQL(dao gen.Dao) string {
+	return dao.(*gen.DO).UnderlyingDB().ToSQL(func(tx *gorm.DB) *gorm.DB {
+		var tm interface{}
+		return tx.Scan(&tm)
+	})
 }

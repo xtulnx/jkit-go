@@ -44,6 +44,9 @@ func NewDaoWrapperByJoin(dao1 gen.Dao, alias string) DaoWrapper {
 }
 
 func NewDaoWrapper(db0, db1 *gorm.DB, alias string) DaoWrapper {
+	if db0 != nil && db1 == nil {
+		db1, db0 = db0, db1
+	}
 	if db0 == nil {
 		db0 = db1.Session(&gorm.Session{Initialized: true, NewDB: true})
 	}
@@ -74,6 +77,7 @@ func (D *tDaoWrapper) SetAlias(alias string) {
 	}
 }
 
+// GetDbRelated 用于联表查询
 func (D *tDaoWrapper) GetDbRelated() *gorm.DB {
 	if D.dbRelated == nil {
 		D.dbRelated = D.db0.Table("?", D.db1)
@@ -93,6 +97,7 @@ func (D *tDaoWrapper) GetDaoRelated() gen.Dao {
 	return D.daoRelated
 }
 
+// GetDbDirect 用于直接查询
 func (D *tDaoWrapper) GetDbDirect() *gorm.DB {
 	if D.dbDirect == nil {
 		D.dbDirect = D.db0.Table("(?) "+D.alias, D.db1)

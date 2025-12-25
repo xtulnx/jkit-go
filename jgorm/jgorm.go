@@ -2,13 +2,30 @@ package jgorm
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"reflect"
-	"strings"
 )
 
+// SafeStr 限定字符串长度，避免字段溢出
+func SafeStr(s string, size int) string {
+	if size <= 1 || len(s) < size {
+		return s
+	}
+	cc := []rune(s)
+	if size <= 1 || len(cc) < size {
+		return s
+	}
+	return string(cc[:size])
+}
+
+// StmtReplaceColumnValue 替换指定字段的值。
+//
+// stmt 当前构建的上下文，将根据 field.Name、 field.ValueOf 查找字段值。
+// fn 执行替换，传入当前值、是否0值，返回 新值及是否需要更新。
 func StmtReplaceColumnValue(stmt *gorm.Statement, field *schema.Field, fn func(r1 interface{}, zero bool) (r2 interface{}, replace bool)) {
 	if v, ok := stmt.Dest.(map[string]interface{}); ok {
 		r1, ok1 := v[field.Name]
@@ -90,9 +107,14 @@ var commentEscaper = strings.NewReplacer(
 	`'`, "''",
 	`\n`, "\\n",
 	`\r`, "\\r",
+	"\\", `\\`,
 )
 
-// 处理表注释，只对mysql的新增表有效，其他数据库忽略
+func SafeTableComment(s string) string {
+	return commentEscaper.Replace(s)
+}
+
+// AutoMigrate 处理表注释，只对mysql的新增表有效，其他数据库忽略
 //
 // todo: 暂时只处理新增时的表注释，后面再加上修改表注释
 func AutoMigrate(db *gorm.DB, dst ...interface{}) (err error) {
@@ -103,7 +125,7 @@ func AutoMigrate(db *gorm.DB, dst ...interface{}) (err error) {
 		}
 		if v1, ok := v.(TableComment); ok {
 			if c1 := v1.TableComment(); c1 != "" {
-				c1 = commentEscaper.Replace(c1)
+				c1 = SafeTableComment(c1)
 				options = fmt.Sprintf(" COMMENT '%s'", c1)
 			}
 		}

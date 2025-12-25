@@ -137,6 +137,10 @@ func (t JTime) nanoseconds() int {
 	return int((time.Duration(t) % time.Second).Nanoseconds())
 }
 
+func (t JTime) GormDataType() string {
+	return "time"
+}
+
 //////////////////////////////////////////////////////////////////
 
 // JDailyTimeRange 每天内的时间范围

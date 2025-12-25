@@ -96,6 +96,18 @@ func (n JDate) Value() (driver.Value, error) {
 	return nil, nil
 }
 
+func (n JDate) GormDataType() string {
+	return "date"
+}
+
+func (n JDate) GobEncode() ([]byte, error) {
+	return time.Time(n.Time).GobEncode()
+}
+
+func (n *JDate) GobDecode(b []byte) error {
+	return n.Time.GobDecode(b)
+}
+
 //////////////////////////////////////////////////////////////////
 
 type JDateSlice []JDate

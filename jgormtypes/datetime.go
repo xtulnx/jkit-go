@@ -99,3 +99,15 @@ func (n JDateTime) Value() (driver.Value, error) {
 	}
 	return nil, nil
 }
+
+func (n JDateTime) GormDataType() string {
+	return "timestamp"
+}
+
+func (n JDateTime) GobEncode() ([]byte, error) {
+	return n.Time.GobEncode()
+}
+
+func (n *JDateTime) GobDecode(b []byte) error {
+	return n.Time.GobDecode(b)
+}
